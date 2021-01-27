@@ -10,14 +10,8 @@ resource "aws_instance" "my_ec2_instance" {
   subnet_id     = aws_subnet.pub_sn.id
   vpc_security_group_ids = [aws_security_group.pub_sg.id]
 
-  /*
-  connection {
-    host        = coalesce(self.public_ip, self.private_ip)
-    type        = "ssh"
-    user        = "ubuntu"
-    private_key = file(var.private_key_path)
-  } */
-  user_data = data.template_file.user_data_keys.rendered ## this server has both pub and priv keys - allowed to connect to _2 instance
+
+  #user_data = data.template_file.user_data_keys.rendered ## this server has both pub and priv keys - allowed to connect to _2 instance
   
   tags = {
     "Name" = "my_ec2_instance",
@@ -43,7 +37,7 @@ resource "aws_instance" "my_ec2_instance_2" {
     user        = "ubuntu"
     private_key = file(var.private_key_path)
   } */
-  user_data = data.template_file.user_data_pub_key.rendered  ## this server can only accept connections from the holder of the priv key
+  #user_data = data.template_file.user_data_pub_key.rendered  ## this server can only accept connections from the holder of the priv key
   
   tags = {
     "Name" = "my_ec2_instance_2",
@@ -77,8 +71,8 @@ resource "aws_instance" "my_ec2_instance_2" {
 provider "aws" {
 
   #0.12.14 Interpolation-only expressions are deprecated: an expression like "${foo}" should be rewritten as just foo.
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
+  #access_key = var.aws_access_key
+  #secret_key = var.aws_secret_key
   region     = var.region_1
   #version = "~> 2.63"
   version = "~> 3.2"
@@ -93,7 +87,7 @@ provider "aws" {
 
 
 data "aws_availability_zones" "available" {}
-
+/*
 data "template_file" "user_data_pub_key" {
   template = file("templates/user_data_pub_key.tpl")
 }
@@ -101,7 +95,7 @@ data "template_file" "user_data_pub_key" {
 data "template_file" "user_data_keys" {
   template = file("templates/user_data_priv_pub_k.tpl")
 }
-
+*/
 
 
 ##################################################################################
@@ -296,9 +290,9 @@ resource "aws_security_group" "pub_sg_2" {
 # VARIABLES
 ##################################################################################
 
-variable "aws_access_key" {}
-variable "aws_secret_key" {}
-variable "private_key_path" {}
+#variable "aws_access_key" {}
+#variable "aws_secret_key" {}
+#variable "private_key_path" {}
 
 
 
