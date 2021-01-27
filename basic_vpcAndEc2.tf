@@ -1,3 +1,5 @@
+# 
+
 ########################################################################
 ############################################################ INSTANCES #
 ########################################################################
@@ -87,15 +89,7 @@ provider "aws" {
 
 
 data "aws_availability_zones" "available" {}
-/*
-data "template_file" "user_data_pub_key" {
-  template = file("templates/user_data_pub_key.tpl")
-}
 
-data "template_file" "user_data_keys" {
-  template = file("templates/user_data_priv_pub_k.tpl")
-}
-*/
 
 
 ##################################################################################
@@ -123,81 +117,6 @@ output "my_ec2_instance_ip" {
 ##################################################################################
 
 
-###########################################################
-############################################# NETWORKING ##
-###########################################################
-resource "aws_vpc" "yakir_vpc1" {
-  cidr_block = var.network_address_space
-  enable_dns_hostnames = "true"
-  tags = {
-        "Name" = "yakir_vpc1"
-    }
-
-}
-
-resource "aws_internet_gateway" "yakir_igw1" {
-  vpc_id = aws_vpc.yakir_vpc1.id
-    tags = {
-        "Name" = "yakir_igw1"
-    }
-
-}
-
-
-
-resource "aws_subnet" "pub_sn" {
-  cidr_block        = var.subnet1_address_space
-  vpc_id            = aws_vpc.yakir_vpc1.id
-  map_public_ip_on_launch = "true"
-  availability_zone = data.aws_availability_zones.available.names[0]
-   tags = {
-        "Name" = "pub_sn"
-    }
-
-}
-
-resource "aws_subnet" "pub_sn_2" {
-  cidr_block        = var.subnet2_address_space
-  vpc_id            = aws_vpc.yakir_vpc1.id
-  map_public_ip_on_launch = "true"
-  availability_zone = data.aws_availability_zones.available.names[1]
-   tags = {
-        "Name" = "pub_sn_2"
-    }
-
-}
-
-
-
-############################################################ ROUTING #
-
-## route table
-resource "aws_route_table" "yakir_rt1" {
-  vpc_id = aws_vpc.yakir_vpc1.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.yakir_igw1.id
-  }
-     tags = {
-        "Name" = "yakir_rt1"
-    }
-}
-
-resource "aws_route_table_association" "yakir_rta_subnet1" {
-  subnet_id      = aws_subnet.pub_sn.id
-  route_table_id = aws_route_table.yakir_rt1.id
-}
-
-resource "aws_route_table_association" "yakir_rta_subnet2" {
-  subnet_id      = aws_subnet.pub_sn_2.id
-  route_table_id = aws_route_table.yakir_rt1.id
-}
-
-
-
-
-
 
 
 
@@ -210,77 +129,6 @@ resource "aws_route_table_association" "yakir_rta_subnet2" {
 
 
 
-# public security group 
-resource "aws_security_group" "pub_sg" {
-  name        = "pub_sg"
-  vpc_id      = aws_vpc.yakir_vpc1.id
-
-  # SSH access from anywhere
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  #Destination CIDR
-  }
-
-  # HTTP access from anywhere
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # outbound internet access
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-     tags = {
-        "Name" = "pub_sg"
-    }
-
-}
-
-
-# public security group 
-resource "aws_security_group" "pub_sg_2" {
-  name        = "pub_sg_2"
-  vpc_id      = aws_vpc.yakir_vpc1.id
-
-  # SSH access from anywhere
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] #Destinatin CIDR
-  }
-
-  # HTTP access from anywhere
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # outbound internet access
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-     tags = {
-        "Name" = "pub_sg_2"
-    }
-
-}
-
 
 
 
@@ -290,10 +138,11 @@ resource "aws_security_group" "pub_sg_2" {
 # VARIABLES
 ##################################################################################
 
-#variable "aws_access_key" {}
-#variable "aws_secret_key" {}
-#variable "private_key_path" {}
+variable "vpc_id" {}
 
+data "aws_vpc" "yakir_vpc1" {
+  id = var.vpc_id
+}
 
 
 variable "key_name" {
